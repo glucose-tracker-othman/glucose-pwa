@@ -429,7 +429,7 @@ export default function GlucoseTracker() {
     const ww = parseFloat(foodWeight), c = parseFloat(carbPer100);
     if (!foodName || isNaN(ww) || isNaN(c) || ww <= 0 || c < 0) return;
     const preset = FOOD_PRESETS.find(f => f.name === foodName);
-    const proteinPer100 = preset?.proteinPer100 ?? parseFloat(proteinInput) || 0;
+    const proteinPer100 = (preset?.proteinPer100 ?? parseFloat(proteinInput)) || 0;
     const protein = (proteinPer100 / 100) * ww;
     setMeals(prev => [...prev, { id: Date.now(), name: foodName, weight: ww, carbs: (c/100)*ww, protein, }]);
     setFoodName(""); setFoodWeight(""); setCarbPer100(""); setSelectedPreset(""); setProteinInput("");
