@@ -188,6 +188,9 @@ const FOOD_PRESETS = [
   { name: "الصافي عصير جوافة", carbPer100: 12, defaultWeight: 250, category: "الصافي" },
   { name: "الصافي عصير كوكتيل", carbPer100: 12, defaultWeight: 250, category: "الصافي" },
   { name: "الصافي عصير ليمون نعناع", carbPer100: 10, defaultWeight: 250, category: "الصافي" },
+  // كتكو
+  { name: "كتكو نايس خل وملح", carbPer100: 56, defaultWeight: 25, category: "كتكو" },
+  { name: "كتكو نايس كاتشب", carbPer100: 56, defaultWeight: 25, category: "كتكو" },
   // وجبات سعودية
   { name: "كبسة دجاج (مع أرز)", carbPer100: 22, category: "وجبات سعودية" },
   { name: "كبسة لحم (مع أرز)", carbPer100: 22, category: "وجبات سعودية" },
@@ -846,7 +849,7 @@ export default function GlucoseTracker() {
                 <div style={{marginBottom:8}}><label>اختر من القائمة</label>
                   <select value={selectedPreset} onChange={handlePreset}>
                     <option value="">— اختر أكلة شائعة —</option>
-                    {["نشويات","محليات","فواكه","لحوم وبروتين","ألبان","مكسرات","مشروبات","شوكولاتة","كي دي دي","المراعي","الصافي","وجبات سعودية"].map(cat=>(
+                    {["نشويات","محليات","فواكه","لحوم وبروتين","ألبان","مكسرات","مشروبات","شوكولاتة","كي دي دي","المراعي","الصافي","كتكو","وجبات سعودية"].map(cat=>(
                       <optgroup key={cat} label={"── "+cat+" ──"}>
                         {FOOD_PRESETS.filter(f=>f.category===cat).map(f=>
                           <option key={f.name} value={f.name}>
