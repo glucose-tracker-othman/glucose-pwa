@@ -189,8 +189,7 @@ const FOOD_PRESETS = [
   { name: "الصافي عصير كوكتيل", carbPer100: 12, defaultWeight: 250, category: "الصافي" },
   { name: "الصافي عصير ليمون نعناع", carbPer100: 10, defaultWeight: 250, category: "الصافي" },
   // كتكو
-  { name: "كتكو نايس خل وملح", carbPer100: 56, defaultWeight: 25, category: "كتكو" },
-  { name: "كتكو نايس كاتشب", carbPer100: 56, defaultWeight: 25, category: "كتكو" },
+  { name: "كتكو نايس خل وملح", carbPer100: 54, proteinPer100: 8.8, defaultWeight: 25, category: "كتكو" },
   // وجبات سعودية
   { name: "كبسة دجاج (مع أرز)", carbPer100: 22, category: "وجبات سعودية" },
   { name: "كبسة لحم (مع أرز)", carbPer100: 22, category: "وجبات سعودية" },
