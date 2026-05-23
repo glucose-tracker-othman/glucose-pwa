@@ -311,6 +311,13 @@ export default function GlucoseTracker() {
   const totalLost = firstWeight && currentWeight ? (firstWeight - currentWeight) : 0;
   const toGoal = targetW && currentWeight ? (currentWeight - targetW) : null;
 
+  // Fat counter
+  const FAT_GRAMS_PER_KG = 855;
+  const totalFatTarget = targetW && firstWeight ? Math.round((firstWeight - targetW) * FAT_GRAMS_PER_KG) : null;
+  const fatBurned = totalLost > 0 ? Math.round(totalLost * FAT_GRAMS_PER_KG) : 0;
+  const fatRemaining = totalFatTarget ? Math.max(0, totalFatTarget - fatBurned) : null;
+  const fatPct = totalFatTarget && fatBurned > 0 ? Math.min(100, (fatBurned / totalFatTarget) * 100) : 0;
+
   // Chart data (last 30 entries)
   const chartData = weightLog.slice(-30).map(e => ({
     date: formatDateShort(e.date),
@@ -735,6 +742,35 @@ export default function GlucoseTracker() {
                 </div>
               )}
 
+              {/* Fat Counter */}
+              {totalFatTarget && (
+                <div className="card" style={{border:"1px solid rgba(251,146,60,0.3)",marginTop:4}}>
+                  <div className="section-title">🔥 عداد الدهون المخزنة</div>
+                  <div style={{textAlign:"center",marginBottom:12}}>
+                    <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>إجمالي الدهون المستهدف حرقها</div>
+                    <div style={{fontSize:32,fontWeight:900,color:"#fb923c"}}>{fatRemaining?.toLocaleString()} <span style={{fontSize:14,fontWeight:400}}>غ</span></div>
+                    <div style={{fontSize:10,color:"#475569",marginTop:2}}>متبقي من أصل {totalFatTarget?.toLocaleString()} غ</div>
+                  </div>
+                  <div style={{background:"rgba(255,255,255,0.06)",borderRadius:100,height:12,overflow:"hidden",margin:"8px 0"}} >
+                    <div style={{height:"100%",borderRadius:100,background:"linear-gradient(90deg,#f97316,#fbbf24)",width:,transition:"width 0.6s ease"}}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:10,marginBottom:10}}>
+                    <span style={{color:"#4ade80",fontWeight:700}}>✅ محروق: {fatBurned.toLocaleString()} غ</span>
+                    <span style={{color:"#fb923c",fontWeight:700}}>{fatPct.toFixed(1)}%</span>
+                  </div>
+                  {fatBurned > 0 && (
+                    <div style={{background:"rgba(74,222,128,0.07)",border:"1px solid rgba(74,222,128,0.15)",borderRadius:10,padding:"9px 12px",fontSize:11,color:"#94a3b8",lineHeight:1.7,textAlign:"center"}}>
+                      🎉 أحرقت ما يعادل <strong style={{color:"#4ade80"}}>{(fatBurned/855).toFixed(1)} كجم</strong> دهون حقيقية!
+                    </div>
+                  )}
+                  {fatBurned === 0 && (
+                    <div style={{fontSize:10,color:"#475569",textAlign:"center"}}>
+                      سجّل وزنك بانتظام لترى العداد يتحرك 💪
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button onClick={()=>{setProfileDraft({...profile});setEditingProfile(true);}} style={{width:"100%",background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:11,color:"#60a5fa",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,padding:"10px",marginTop:4}}>
                 ✏️ تعديل الهدف أو البيانات
               </button>
@@ -1099,6 +1135,303 @@ export default function GlucoseTracker() {
                       <div style={{fontSize:11,color:"#64748b",marginTop:4}}>تقريباً في {goalETA.eta}</div>
                     </div>
                     <div style={{fontSize:10,color:"#475569",marginTop:8,textAlign:"center"}}>
+                      💡 الحساب بناءً على معدل خسارتك الفعلي من سجل الوزن
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{textAlign:"center",padding:"12px 0",color:"#475569",fontSize:12}}>
+                    <div style={{fontSize:22,marginBottom:5}}>⚖️</div>
+                    <div>سجّل وزنك مرتين على الأقل لحساب الوقت</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Weekly report */}
+              <div className="card" style={{border:"1px solid rgba(139,92,246,0.2)"}}>
+                <div className="section-title">📋 التقرير الأسبوعي</div>
+                {!weeklyReport ? (
+                  <div style={{textAlign:"center",padding:"14px 0",color:"#475569",fontSize:12}}>
+                    <div style={{fontSize:22,marginBottom:5}}>📋</div>
+                    <div>ما في بيانات كافية بعد</div>
+                    <div style={{fontSize:10,marginTop:3}}>استخدم "إنهاء اليوم" يومياً لتراكم البيانات</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{fontSize:10,color:"#64748b",marginBottom:10}}>آخر {weeklyReport.count} أيام مسجّلة</div>
+
+                    <div className="grid-2" style={{marginBottom:10}}>
+                      <div className="stat-box">
+                        <div style={{fontSize:9,color:"#64748b",marginBottom:3}}>متوسط الجلوكوز</div>
+                        <div style={{fontSize:16,fontWeight:800,color:"#4ade80"}}>{weeklyReport.avgGlucose.toFixed(0)}</div>
+                        <div style={{fontSize:9,color:"#475569"}}>غ/يوم</div>
+                      </div>
+                      <div className="stat-box">
+                        <div style={{fontSize:9,color:"#64748b",marginBottom:3}}>إجمالي الدهون المحروقة</div>
+                        <div style={{fontSize:16,fontWeight:800,color:"#fde047"}}>{weeklyReport.totalFat.toFixed(1)}</div>
+                        <div style={{fontSize:9,color:"#475569"}}>غرام دهون</div>
+                      </div>
+                      <div className="stat-box">
+                        <div style={{fontSize:9,color:"#64748b",marginBottom:3}}>أيام تجاوزت الحد</div>
+                        <div style={{fontSize:16,fontWeight:800,color:weeklyReport.daysOver>0?"#f87171":"#4ade80"}}>{weeklyReport.daysOver}</div>
+                        <div style={{fontSize:9,color:"#475569"}}>من {weeklyReport.count}</div>
+                      </div>
+                      <div className="stat-box">
+                        <div style={{fontSize:9,color:"#64748b",marginBottom:3}}>جلوكوز المشي</div>
+                        <div style={{fontSize:16,fontWeight:800,color:"#fb923c"}}>{weeklyReport.totalWalkB.toFixed(0)}</div>
+                        <div style={{fontSize:9,color:"#475569"}}>غ محروق</div>
+                      </div>
+                    </div>
+
+                    {weeklyReport.best && (
+                      <div style={{background:"rgba(74,222,128,0.06)",border:"1px solid rgba(74,222,128,0.12)",borderRadius:10,padding:"9px 12px",marginBottom:7,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <div style={{fontSize:10,color:"#4ade80",fontWeight:700}}>🏆 أفضل يوم</div>
+                          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{formatDateFull(weeklyReport.best.key)}</div>
+                        </div>
+                        <div style={{textAlign:"left"}}>
+                          <div style={{fontSize:13,fontWeight:800,color:"#fde047"}}>{(weeklyReport.best.fatBurn||0).toFixed(1)} غ دهون</div>
+                          <div style={{fontSize:10,color:"#64748b"}}>جلوكوز: {weeklyReport.best.totalIn.toFixed(0)} غ</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {weeklyReport.worst && weeklyReport.worst.key !== weeklyReport.best?.key && (
+                      <div style={{background:"rgba(239,68,68,0.05)",border:"1px solid rgba(239,68,68,0.12)",borderRadius:10,padding:"9px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <div style={{fontSize:10,color:"#f87171",fontWeight:700}}>📉 يوم يحتاج تحسين</div>
+                          <div style={{fontSize:11,color:"#94a3b8",marginTop:2}}>{formatDateFull(weeklyReport.worst.key)}</div>
+                        </div>
+                        <div style={{textAlign:"left"}}>
+                          <div style={{fontSize:13,fontWeight:800,color:"#f87171"}}>{(weeklyReport.worst.fatBurn||0).toFixed(1)} غ دهون</div>
+                          <div style={{fontSize:10,color:"#64748b"}}>جلوكوز: {weeklyReport.worst.totalIn.toFixed(0)} غ</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
+          {/* ===== MONTHLY TAB ===== */}
+          {tab==="monthly" && (()=>{
+            const allKeys = Object.keys(history).sort((a,b)=>a.localeCompare(b));
+            const now = new Date();
+            const thisMonth = allKeys.filter(k => k.startsWith(now.toISOString().slice(0,7)));
+            const lastMonthDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+            const lastMonth = allKeys.filter(k => k.startsWith(lastMonthDate.toISOString().slice(0,7)));
+
+            const calcStats = (keys) => {
+              if (!keys.length) return null;
+              const days = keys.map(k=>history[k]);
+              const avgGlucose = days.reduce((s,d)=>s+d.totalIn,0)/days.length;
+              const totalFat = days.reduce((s,d)=>s+(d.fatBurn||0),0);
+              const totalWalkBurn = days.reduce((s,d)=>s+(d.totalWalkBurn||0),0);
+              const daysOver = days.filter(d=>d.totalIn>DAILY_GLUCOSE).length;
+              const daysDeficit = days.length - daysOver;
+              const best = [...days].sort((a,b)=>(b.fatBurn||0)-(a.fatBurn||0))[0];
+              const bestKey = keys[days.indexOf(best)];
+              return { avgGlucose, totalFat, totalWalkBurn, daysOver, daysDeficit, best, bestKey, count:keys.length };
+            };
+
+            const thisStats = calcStats(thisMonth);
+            const lastStats = calcStats(lastMonth);
+
+            // Weight change this month
+            const monthWeights = weightLog.filter(e=>e.date.startsWith(now.toISOString().slice(0,7)));
+            const weightChange = monthWeights.length>=2 ? (monthWeights[monthWeights.length-1].weight - monthWeights[0].weight) : null;
+
+            // Chart: glucose per day this month
+            const chartMonthly = thisMonth.map(k=>({
+              date: formatDateShort(k),
+              glucose: Math.round(history[k].totalIn),
+              fat: parseFloat((history[k].fatBurn||0).toFixed(1)),
+            }));
+
+            return (
+              <div className="page">
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <div style={{fontSize:13,fontWeight:700,color:darkMode?"#f1f5f9":"#1e293b"}}>
+                    {now.toLocaleString("ar-SA",{month:"long",year:"numeric"})}
+                  </div>
+                  {lastStats && <div style={{fontSize:10,color:"#64748b"}}>مقارنة بالشهر الماضي</div>}
+                </div>
+
+                {!thisStats ? (
+                  <div className="card" style={{textAlign:"center",padding:"22px 0",color:"#475569",fontSize:12}}>
+                    <div style={{fontSize:28,marginBottom:7}}>📆</div>
+                    <div>ما في بيانات هذا الشهر بعد</div>
+                    <div style={{fontSize:10,marginTop:3}}>استخدم "إنهاء اليوم" يومياً لتراكم البيانات</div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Key stats */}
+                    <div className="grid-2" style={{marginBottom:10}}>
+                      {[
+                        { label:"أيام مسجّلة", val:thisStats.count, color:"#94a3b8", prevVal:lastStats?.count },
+                        { label:"متوسط الجلوكوز", val:thisStats.avgGlucose.toFixed(0)+" غ", color:"#4ade80", prevVal:lastStats?.avgGlucose.toFixed(0)+" غ" },
+                        { label:"إجمالي دهون محروقة", val:thisStats.totalFat.toFixed(1)+" غ", color:"#fde047", prevVal:lastStats?.totalFat.toFixed(1)+" غ" },
+                        { label:"أيام ضمن الهدف", val:thisStats.daysDeficit, color:"#60a5fa", prevVal:lastStats?.daysDeficit },
+                      ].map((s,i)=>(
+                        <div key={i} className="stat-box">
+                          <div style={{fontSize:9,color:"#64748b",marginBottom:3}}>{s.label}</div>
+                          <div style={{fontSize:16,fontWeight:800,color:s.color}}>{s.val}</div>
+                          {s.prevVal !== undefined && <div style={{fontSize:9,color:"#475569"}}>الشهر الماضي: {s.prevVal}</div>}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Weight change */}
+                    {weightChange !== null && (
+                      <div className="card" style={{background:weightChange<0?"rgba(74,222,128,0.06)":"rgba(239,68,68,0.05)",border:`1px solid ${weightChange<0?"rgba(74,222,128,0.15)":"rgba(239,68,68,0.12)"}`}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div>
+                            <div style={{fontSize:11,color:"#64748b",marginBottom:3}}>تغيّر الوزن هذا الشهر</div>
+                            <div style={{fontSize:10,color:"#475569"}}>{monthWeights[0].weight} → {monthWeights[monthWeights.length-1].weight} كجم</div>
+                          </div>
+                          <div style={{fontSize:22,fontWeight:900,color:weightChange<0?"#4ade80":"#f87171"}}>
+                            {weightChange<0?"▼":"▲"} {Math.abs(weightChange).toFixed(1)} كجم
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Best day */}
+                    {thisStats.best && (
+                      <div className="card" style={{border:"1px solid rgba(234,179,8,0.15)"}}>
+                        <div className="section-title">🏆 أفضل يوم هذا الشهر</div>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div>
+                            <div style={{fontSize:12,fontWeight:700,color:darkMode?"#f1f5f9":"#1e293b"}}>{formatDateFull(thisStats.bestKey)}</div>
+                            <div style={{fontSize:10,color:"#64748b",marginTop:2}}>جلوكوز: {thisStats.best.totalIn.toFixed(0)} غ</div>
+                          </div>
+                          <div style={{textAlign:"left"}}>
+                            <div style={{fontSize:16,fontWeight:900,color:"#fde047"}}>{(thisStats.best.fatBurn||0).toFixed(1)} غ</div>
+                            <div style={{fontSize:9,color:"#64748b"}}>دهون محروقة</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Monthly chart */}
+                    {chartMonthly.length >= 3 && (
+                      <div className="card">
+                        <div className="section-title">📈 جلوكوز يومي — هذا الشهر</div>
+                        <ResponsiveContainer width="100%" height={150}>
+                          <LineChart data={chartMonthly} margin={{top:4,right:4,left:-25,bottom:0}}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)"/>
+                            <XAxis dataKey="date" tick={{fontSize:8,fill:"#475569"}} tickLine={false} axisLine={false}/>
+                            <YAxis tick={{fontSize:8,fill:"#4ade80"}} tickLine={false} axisLine={false}/>
+                            <ReferenceLine y={DAILY_GLUCOSE} stroke="#4ade80" strokeDasharray="3 3" strokeWidth={1}/>
+                            <Tooltip contentStyle={{background:"#1e293b",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,fontSize:11,direction:"rtl"}} labelStyle={{color:"#94a3b8"}}/>
+                            <Line type="monotone" dataKey="glucose" stroke="#4ade80" strokeWidth={2} dot={{r:2,fill:"#4ade80",strokeWidth:0}} name="الجلوكوز"/>
+                          </LineChart>
+                        </ResponsiveContainer>
+                        <div style={{fontSize:9,color:"#64748b",textAlign:"center",marginTop:4}}>الخط الأخضر = الاحتياج اليومي ({DAILY_GLUCOSE} غ)</div>
+                      </div>
+                    )}
+
+                    {/* Comparison with last month */}
+                    {lastStats && (
+                      <div className="card" style={{border:"1px solid rgba(99,102,241,0.15)"}}>
+                        <div className="section-title">📊 مقارنة بالشهر الماضي</div>
+                        {[
+                          { label:"متوسط الجلوكوز", this:thisStats.avgGlucose, last:lastStats.avgGlucose, unit:"غ", lowerBetter:true },
+                          { label:"دهون محروقة", this:thisStats.totalFat, last:lastStats.totalFat, unit:"غ", lowerBetter:false },
+                          { label:"أيام ضمن الهدف", this:thisStats.daysDeficit, last:lastStats.daysDeficit, unit:"يوم", lowerBetter:false },
+                        ].map((row,i)=>{
+                          const diff = row.this - row.last;
+                          const improved = row.lowerBetter ? diff < 0 : diff > 0;
+                          return (
+                            <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                              <span style={{fontSize:11,color:"#94a3b8"}}>{row.label}</span>
+                              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                <span style={{fontSize:11,color:"#64748b"}}>{typeof row.this==="number"&&!Number.isInteger(row.this)?row.this.toFixed(1):Math.round(row.this)} {row.unit}</span>
+                                <span style={{fontSize:10,color:improved?"#4ade80":"#f87171",fontWeight:700}}>
+                                  {diff>0?"+":""}{typeof diff==="number"&&!Number.isInteger(diff)?diff.toFixed(1):Math.round(diff)} {improved?"✓":"↓"}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ===== FAVORITES TAB ===== */}
+          {tab==="favorites" && (
+            <div className="page">
+              <div className="card">
+                <div className="section-title">★ الوجبات المفضلة</div>
+                {favorites.length===0 ? (
+                  <div style={{textAlign:"center",padding:"16px 0",color:"#475569",fontSize:12}}>
+                    <div style={{fontSize:24,marginBottom:6}}>★</div>
+                    <div>ما عندك وجبات محفوظة بعد</div>
+                    <div style={{fontSize:10,marginTop:3}}>اضغط ★ بجانب أي وجبة لحفظها</div>
+                  </div>
+                ) : favorites.map((fav,i)=>(
+                  <div key={fav.id} className="meal-row">
+                    <span className="meal-name">{fav.name}</span>
+                    <span className="meal-weight">{fav.weight}غ</span>
+                    <span className="meal-carb">↳ {fav.carbs.toFixed(1)}غ</span>
+                    <button className="fav-add-btn" onClick={()=>{setMeals(p=>[...p,{...fav,id:Date.now()}]);setTab("today");}}>+ أضف</button>
+                    <button className="remove-btn" onClick={()=>setFavorites(p=>p.filter((_,idx)=>idx!==i))}>✕</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ===== HISTORY TAB ===== */}
+          {tab==="history" && (
+            <div className="page">
+              <div className="section-title" style={{padding:"0 4px 8px"}}>السجل الأسبوعي</div>
+              {historyKeys.length===0 ? (
+                <div className="card" style={{textAlign:"center",padding:"20px 0",color:"#475569",fontSize:12}}>
+                  <div style={{fontSize:24,marginBottom:6}}>📊</div>
+                  <div>ما في سجل بعد</div>
+                  <div style={{fontSize:10,marginTop:3}}>اضغط "إنهاء اليوم" لحفظ يومك</div>
+                </div>
+              ) : historyKeys.map(key=>{
+                const d = history[key];
+                const p = Math.min(100,(d.totalIn/DAILY_GLUCOSE)*100);
+                const deficit = d.netNeed > 0;
+                return (
+                  <div key={key} className="hist-card">
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"#f1f5f9"}}>{formatDateFull(key)}</div>
+                      <div style={{fontSize:10,color:deficit?"#a5b4fc":"#f87171",fontWeight:600,background:deficit?"rgba(99,102,241,0.15)":"rgba(239,68,68,0.15)",padding:"2px 7px",borderRadius:20}}>
+                        {deficit?"ناقص":"فائض"} {Math.abs(d.netNeed).toFixed(0)}غ
+                      </div>
+                    </div>
+                    <div className="progress-bar" style={{margin:"5px 0"}}>
+                      <div className="progress-fill" style={{width:`${p}%`,background:p>100?"linear-gradient(90deg,#f87171,#ef4444)":"linear-gradient(90deg,#4ade80,#22c55e)"}}/>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#64748b"}}>
+                      <span>دخل: <strong style={{color:"#4ade80"}}>{d.totalIn.toFixed(0)}غ</strong></span>
+                      {d.totalWalkBurn>0 && <span>مشي: <strong style={{color:"#fb923c"}}>{d.totalWalkBurn.toFixed(0)}غ</strong></span>}
+                      <span>دهون: <strong style={{color:"#fde047"}}>{d.fatBurn.toFixed(1)}غ</strong></span>
+                    </div>
+                    {d.meals && d.meals.length>0 && (
+                      <div style={{marginTop:6,borderTop:"1px solid rgba(255,255,255,0.05)",paddingTop:6}}>
+                        {d.meals.map((m,i)=><div key={i} style={{fontSize:10,color:"#64748b",marginBottom:2}}>• {m.name} ({m.weight}غ) ← {m.carbs.toFixed(1)}غ</div>)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
                       💡 الحساب بناءً على معدل خسارتك الفعلي من سجل الوزن
                     </div>
                   </div>
